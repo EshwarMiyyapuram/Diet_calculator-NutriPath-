@@ -75,42 +75,51 @@ section[data-testid="stSidebar"] * {
     color: #111111 !important;
 }
 
-/* Selectbox — closed control (all nested BaseWeb layers) */
+/* Selectbox — closed control: brute-force override every nested layer */
+.stSelectbox,
+.stSelectbox > div,
 .stSelectbox [data-baseweb="select"],
 .stSelectbox [data-baseweb="select"] > div,
 .stSelectbox [data-baseweb="select"] div,
+.stSelectbox [data-baseweb="select"] span,
+div[data-testid="stSelectbox"],
+div[data-testid="stSelectbox"] *,
 div[data-baseweb="select"],
-div[data-baseweb="select"] > div,
-div[data-baseweb="select"] div {
-    background-color: #ffffff !important;
-    color: #111111 !important;
-    border-color: #cfe8d8 !important;
-}
-.stSelectbox [data-baseweb="select"] *,
 div[data-baseweb="select"] * {
+    background: #ffffff !important;
+    background-color: #ffffff !important;
     color: #111111 !important;
     -webkit-text-fill-color: #111111 !important;
     fill: #111111 !important;
+    stroke: #111111 !important;
+    border-color: #cfe8d8 !important;
+}
+.stSelectbox svg,
+div[data-baseweb="select"] svg {
+    fill: #111111 !important;
 }
 
-/* Selectbox — open dropdown list (rendered in a portal, so keep these unscoped/global) */
+/* Selectbox — open dropdown list (rendered in a portal at document root) */
 [data-baseweb="popover"],
-[data-baseweb="popover"] div,
-[data-baseweb="menu"],
-ul[data-baseweb="menu"],
-li[data-baseweb="menu-item"],
-[role="listbox"],
-[role="option"] {
-    background-color: #ffffff !important;
-    color: #111111 !important;
-}
 [data-baseweb="popover"] *,
+[data-baseweb="menu"],
+[data-baseweb="menu"] *,
+ul[data-baseweb="menu"],
+ul[data-baseweb="menu"] *,
+li[data-baseweb="menu-item"],
+li[data-baseweb="menu-item"] *,
+[role="listbox"],
+[role="listbox"] *,
+[role="option"],
 [role="option"] * {
+    background: #ffffff !important;
+    background-color: #ffffff !important;
     color: #111111 !important;
     -webkit-text-fill-color: #111111 !important;
 }
 [role="option"]:hover,
 li[data-baseweb="menu-item"]:hover {
+    background: #eaf6ee !important;
     background-color: #eaf6ee !important;
 }
 
