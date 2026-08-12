@@ -35,21 +35,40 @@ st.markdown("""
 
 html, body, [class*="css"] {
     font-family: 'Poppins', sans-serif;
+    color: #111111;
+}
+
+/* Force readable dark text everywhere by default */
+p, span, div, label, li, h1, h2, h3, h4, h5, h6,
+.stMarkdown, .stText, .stCaption, .stAlert, .stTextInput label,
+.stNumberInput label, .stSelectbox label {
+    color: #111111;
 }
 
 .stApp {
-    background: linear-gradient(180deg, #f4faf5 0%, #eef7f0 100%);
+    background-color: #f2fbf4; /* light green */
 }
 
-/* Hero header */
+/* Sidebar */
+section[data-testid="stSidebar"] {
+    background-color: #ffffff;
+}
+section[data-testid="stSidebar"] * {
+    color: #111111;
+}
+
+/* Hero header — keep white text here since it sits on a dark green gradient */
 .hero {
     background: linear-gradient(135deg, #1f8a4c 0%, #34c471 55%, #7be0a3 100%);
     padding: 2.6rem 2rem;
     border-radius: 20px;
-    color: white;
+    color: #ffffff;
     text-align: center;
     margin-bottom: 1.6rem;
     box-shadow: 0 10px 30px rgba(31, 138, 76, 0.25);
+}
+.hero h1, .hero p {
+    color: #ffffff !important;
 }
 .hero h1 {
     font-size: 2.6rem;
@@ -65,12 +84,13 @@ html, body, [class*="css"] {
 
 /* Section card */
 .section-card {
-    background: white;
+    background: #ffffff;
     border-radius: 16px;
     padding: 1.6rem 1.8rem;
     box-shadow: 0 4px 18px rgba(0,0,0,0.06);
     margin-bottom: 1.4rem;
     border: 1px solid #eaf3ec;
+    color: #111111;
 }
 
 .section-title {
@@ -82,7 +102,7 @@ html, body, [class*="css"] {
 
 /* Metric-like badge cards */
 .badge-card {
-    background: linear-gradient(145deg, #f6fdf8, #ecfaf1);
+    background: #ffffff;
     border: 1px solid #d7f0e0;
     border-radius: 14px;
     padding: 1rem 1.1rem;
@@ -90,7 +110,7 @@ html, body, [class*="css"] {
 }
 .badge-card .label {
     font-size: 0.82rem;
-    color: #4a6a58;
+    color: #333333;
     font-weight: 500;
     text-transform: uppercase;
     letter-spacing: 0.4px;
@@ -102,10 +122,10 @@ html, body, [class*="css"] {
     margin-top: 0.15rem;
 }
 
-/* Buttons */
+/* Buttons — keep white text, they sit on a solid green button background */
 .stButton>button, .stDownloadButton>button {
     background: linear-gradient(135deg, #1f8a4c, #34c471);
-    color: white;
+    color: #ffffff !important;
     font-weight: 600;
     border-radius: 12px;
     border: none;
@@ -114,13 +134,13 @@ html, body, [class*="css"] {
 }
 .stButton>button:hover, .stDownloadButton>button:hover {
     background: linear-gradient(135deg, #17703c, #2bab63);
-    color: white;
+    color: #ffffff !important;
 }
 
 /* Footer */
 .footer-note {
     text-align: center;
-    color: #6b7d72;
+    color: #333333;
     font-size: 0.85rem;
     margin-top: 2rem;
 }
