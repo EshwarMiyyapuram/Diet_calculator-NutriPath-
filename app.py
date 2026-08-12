@@ -19,11 +19,16 @@ from reportlab.platypus import (
 APP_NAME = "NutriPath"
 APP_TAGLINE = "Your Personalized Path to Smarter Eating"
 
+# Track whether a plan has already been generated this session, so we can
+# collapse the sidebar automatically on subsequent runs after Calculate is clicked.
+if "show_results" not in st.session_state:
+    st.session_state.show_results = False
+
 st.set_page_config(
     page_title=f"{APP_NAME} | Diet & Macro Calculator",
     page_icon="🥗",
     layout="wide",
-    initial_sidebar_state="expanded"
+    initial_sidebar_state="collapsed" if st.session_state.show_results else "expanded"
 )
 
 # =====================================================================
@@ -57,27 +62,56 @@ section[data-testid="stSidebar"] * {
     color: #111111;
 }
 
-/* Input fields (number inputs, text inputs, selectboxes) — force light background + dark text */
+/* Input fields (number inputs, text inputs) — force light background + dark text */
 .stTextInput input,
-.stNumberInput input,
-.stSelectbox div[data-baseweb="select"] > div {
+.stNumberInput input {
     background-color: #ffffff !important;
     color: #111111 !important;
     border: 1px solid #cfe8d8 !important;
+    -webkit-text-fill-color: #111111 !important;
 }
 .stNumberInput button {
     background-color: #f2fbf4 !important;
     color: #111111 !important;
 }
-.stSelectbox div[data-baseweb="select"] * {
-    color: #111111 !important;
-}
-/* Dropdown menu options */
-ul[data-baseweb="menu"] {
+
+/* Selectbox — closed control (all nested BaseWeb layers) */
+.stSelectbox [data-baseweb="select"],
+.stSelectbox [data-baseweb="select"] > div,
+.stSelectbox [data-baseweb="select"] div,
+div[data-baseweb="select"],
+div[data-baseweb="select"] > div,
+div[data-baseweb="select"] div {
     background-color: #ffffff !important;
-}
-ul[data-baseweb="menu"] li {
     color: #111111 !important;
+    border-color: #cfe8d8 !important;
+}
+.stSelectbox [data-baseweb="select"] *,
+div[data-baseweb="select"] * {
+    color: #111111 !important;
+    -webkit-text-fill-color: #111111 !important;
+    fill: #111111 !important;
+}
+
+/* Selectbox — open dropdown list (rendered in a portal, so keep these unscoped/global) */
+[data-baseweb="popover"],
+[data-baseweb="popover"] div,
+[data-baseweb="menu"],
+ul[data-baseweb="menu"],
+li[data-baseweb="menu-item"],
+[role="listbox"],
+[role="option"] {
+    background-color: #ffffff !important;
+    color: #111111 !important;
+}
+[data-baseweb="popover"] *,
+[role="option"] * {
+    color: #111111 !important;
+    -webkit-text-fill-color: #111111 !important;
+}
+[role="option"]:hover,
+li[data-baseweb="menu-item"]:hover {
+    background-color: #eaf6ee !important;
 }
 
 /* Hero header — keep white text here since it sits on a dark green gradient */
@@ -206,12 +240,33 @@ with st.sidebar:
     st.divider()
     calculate = st.button("✨ Calculate My Diet Plan", type="primary", use_container_width=True)
 
-if not calculate:
+if calculate:
+    st.session_state.show_results = True
+
+if not st.session_state.show_results:
     st.info("👈 Fill in your details in the sidebar and click **Calculate My Diet Plan** to get started.")
     st.markdown(f"""
     <div class="footer-note">🥗 {APP_NAME} — {APP_TAGLINE}</div>
     """, unsafe_allow_html=True)
     st.stop()
+
+# Best-effort JS nudge to force-collapse the sidebar the moment results first appear
+# (initial_sidebar_state alone may not retroactively collapse an already-open sidebar
+# within the same browser session).
+if calculate:
+    st.markdown("""
+    <script>
+    setTimeout(function() {
+        try {
+            const doc = window.parent.document;
+            const btn = doc.querySelector('[data-testid="stSidebarCollapseButton"] button')
+                     || doc.querySelector('[data-testid="collapsedControl"] button')
+                     || doc.querySelector('button[aria-label*="ollapse"]');
+            if (btn) { btn.click(); }
+        } catch (e) {}
+    }, 150);
+    </script>
+    """, unsafe_allow_html=True)
 
 # =====================================================================
 # CALCULATIONS
