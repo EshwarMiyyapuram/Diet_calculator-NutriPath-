@@ -24,6 +24,15 @@ APP_TAGLINE = "Your Personalized Path to Smarter Eating"
 if "show_results" not in st.session_state:
     st.session_state.show_results = False
 
+# IMPORTANT: this must run BEFORE set_page_config so that when the Calculate
+# button is clicked, this same rerun already knows show_results = True and
+# requests a collapsed sidebar via initial_sidebar_state. (Previously this
+# flag was only set *after* set_page_config, so the collapse request always
+# lagged one run behind.)
+calculate_clicked_last_run = st.session_state.get("_calculate_clicked", False)
+if calculate_clicked_last_run:
+    st.session_state.show_results = True
+
 st.set_page_config(
     page_title=f"{APP_NAME} | Diet & Macro Calculator",
     page_icon="🥗",
@@ -249,6 +258,11 @@ with st.sidebar:
     st.divider()
     calculate = st.button("✨ Calculate My Diet Plan", type="primary", use_container_width=True)
 
+# Remember (for the *next* rerun) that Calculate was pressed, so show_results
+# and the collapsed initial_sidebar_state are already correct before
+# set_page_config runs on that next pass.
+st.session_state["_calculate_clicked"] = calculate
+
 if calculate:
     st.session_state.show_results = True
 
@@ -259,21 +273,56 @@ if not st.session_state.show_results:
     """, unsafe_allow_html=True)
     st.stop()
 
-# Best-effort JS nudge to force-collapse the sidebar the moment results first appear
-# (initial_sidebar_state alone may not retroactively collapse an already-open sidebar
-# within the same browser session).
+# Robust JS fallback: force-collapse the sidebar the moment results first
+# appear. initial_sidebar_state only reliably applies on a fresh browser
+# load, not on every Streamlit rerun, so we still actively click the
+# collapse control. This version retries for a few seconds (instead of a
+# single 150ms attempt) and tries every selector Streamlit has used across
+# versions, so it works even if the DOM isn't ready yet or the button
+# testid differs.
 if calculate:
     st.markdown("""
     <script>
-    setTimeout(function() {
-        try {
-            const doc = window.parent.document;
-            const btn = doc.querySelector('[data-testid="stSidebarCollapseButton"] button')
-                     || doc.querySelector('[data-testid="collapsedControl"] button')
-                     || doc.querySelector('button[aria-label*="ollapse"]');
-            if (btn) { btn.click(); }
-        } catch (e) {}
-    }, 150);
+    (function () {
+        var attempts = 0;
+        var maxAttempts = 40;          // ~40 * 150ms = 6s of retrying
+        var collapsed = false;
+
+        function tryCollapse() {
+            if (collapsed || attempts >= maxAttempts) return;
+            attempts++;
+            try {
+                var doc = window.parent && window.parent.document ? window.parent.document : document;
+
+                var sidebar = doc.querySelector('section[data-testid="stSidebar"]');
+                // If sidebar is already collapsed/hidden, stop.
+                if (!sidebar || sidebar.getAttribute('aria-expanded') === 'false') {
+                    collapsed = true;
+                    return;
+                }
+
+                var btn =
+                    doc.querySelector('[data-testid="stSidebarCollapseButton"] button') ||
+                    doc.querySelector('[data-testid="collapsedControl"] button') ||
+                    doc.querySelector('[data-testid="stSidebarCollapseButton"]') ||
+                    doc.querySelector('button[data-testid="baseButton-headerNoPadding"][kind="header"]') ||
+                    doc.querySelector('button[aria-label="Close sidebar"]') ||
+                    doc.querySelector('button[aria-label*="ollapse"]') ||
+                    doc.querySelector('button[aria-label*="lose sidebar"]');
+
+                if (btn) {
+                    btn.click();
+                    collapsed = true;
+                    return;
+                }
+            } catch (e) {
+                // ignore and retry
+            }
+            setTimeout(tryCollapse, 150);
+        }
+
+        setTimeout(tryCollapse, 100);
+    })();
     </script>
     """, unsafe_allow_html=True)
 
