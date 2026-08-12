@@ -274,15 +274,18 @@ if not st.session_state.show_results:
     """, unsafe_allow_html=True)
     st.stop()
 
-# Robust JS fallback: force-collapse the sidebar the moment results first
-# appear. initial_sidebar_state only reliably applies on a fresh browser
-# load, not on every Streamlit rerun, so we still actively click the
-# collapse control. This version retries for a few seconds (instead of a
-# single 150ms attempt) and tries every selector Streamlit has used across
-# versions, so it works even if the DOM isn't ready yet or the button
-# testid differs.
+# Force-collapse the sidebar the moment results first appear.
+# initial_sidebar_state only reliably applies on a fresh browser load, not
+# on every Streamlit rerun, so we still actively click the collapse control.
+#
+# IMPORTANT: this MUST go through components.v1.html(), not st.markdown().
+# st.markdown(unsafe_allow_html=True) renders HTML via innerHTML, and
+# browsers never execute <script> tags inserted via innerHTML — so a script
+# placed there is silently dead code no matter how it's written.
+# components.v1.html() renders inside a real <iframe>, where <script> tags
+# do execute, and we reach back out to the parent page via window.parent.
 if calculate:
-    st.markdown("""
+    components.html("""
     <script>
     (function () {
         var attempts = 0;
@@ -293,7 +296,7 @@ if calculate:
             if (collapsed || attempts >= maxAttempts) return;
             attempts++;
             try {
-                var doc = window.parent && window.parent.document ? window.parent.document : document;
+                var doc = window.parent.document;
 
                 var sidebar = doc.querySelector('section[data-testid="stSidebar"]');
                 // If sidebar is already collapsed/hidden, stop.
@@ -325,7 +328,7 @@ if calculate:
         setTimeout(tryCollapse, 100);
     })();
     </script>
-    """, unsafe_allow_html=True)
+    """, height=0, width=0)
 
 # =====================================================================
 # CALCULATIONS
