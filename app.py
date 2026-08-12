@@ -57,6 +57,29 @@ section[data-testid="stSidebar"] * {
     color: #111111;
 }
 
+/* Input fields (number inputs, text inputs, selectboxes) — force light background + dark text */
+.stTextInput input,
+.stNumberInput input,
+.stSelectbox div[data-baseweb="select"] > div {
+    background-color: #ffffff !important;
+    color: #111111 !important;
+    border: 1px solid #cfe8d8 !important;
+}
+.stNumberInput button {
+    background-color: #f2fbf4 !important;
+    color: #111111 !important;
+}
+.stSelectbox div[data-baseweb="select"] * {
+    color: #111111 !important;
+}
+/* Dropdown menu options */
+ul[data-baseweb="menu"] {
+    background-color: #ffffff !important;
+}
+ul[data-baseweb="menu"] li {
+    color: #111111 !important;
+}
+
 /* Hero header — keep white text here since it sits on a dark green gradient */
 .hero {
     background: linear-gradient(135deg, #1f8a4c 0%, #34c471 55%, #7be0a3 100%);
